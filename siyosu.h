@@ -24,15 +24,6 @@ extern "C" {
 #define boid void*
 #define string char*
 
-/// Usage
-/// panic("This is wrong")
-/// or
-/// panic("This is the value i get %d", 10)
-#define panic(fmt, ...) \
-  printf("Panicked at %d from %s\n", __LINE__, __FILE__); \
-  printf("Panicked at %s\n", fmt, ##__VA_ARGS__); \
-  abort();
-
 #define print(fmt, ...) \
   printf("%s", fmt, ##__VA_ARGS__);
 
@@ -55,11 +46,32 @@ extern "C" {
 #define __MAC_OS
 #endif
 
+#ifndef __MAX_HASH_KEYS
+#define __MAX_HASH_KEYS 1024
+#endif
+
+#ifndef __MAX_HASH_VALUES
+#define __MAX_HASH_VALUES 1024
+#endif
+
+/// Usage
+/// panic("This is wrong")
+/// or
+/// panic("This is the value i get %d", 10)
+#define panic(fmt, ...) \
+  printf("Panicked at %d from %s\n", __LINE__, __FILE__); \
+  printf("Panicked at %s\n", fmt, ##__VA_ARGS__); \
+  abort();
+
+bool s__vn(boid ptr) {
+  return ptr == NULL;
+}
+
 /// memory funtions
 /// malloc
 boid s_malloc(size_t size) {
     boid mem = malloc(size);
-    if (mem == NULL)
+    if (s__vn(mem))
         panic("Unable to allocate memory")
         else
             return mem
@@ -73,7 +85,7 @@ boid s_free(boid ptr) {
 /// calloc
 boid s_calloc(size_t nmemb, size_t size) {
     boid mem = calloc(nmemb, size);
-    if (mem == NULL)
+    if (s__vn(mem))
         panic("Unable to allocate memory")
         else
             return mem
@@ -86,7 +98,7 @@ boid s_realloc(size_t size) {
     boid smem = malloc(size);
     s_free(smem);
     realloc(smem, size);
-    if (smem == NULL)
+    if (s__vn(smem))
         panic("Unable to allocate memory")
         else
             return smem
@@ -97,7 +109,7 @@ boid s_reallocarray(size_t nmemb, size_t size) {
     boid smem = calloc(nmemb, size);
     s_free(smem);
     reallocarray(smem, nmemb, size);
-    if (smem == NULL)
+    if (s__vn(smem))
         panic("Unable to allocate memory")
         else
             return smem
@@ -137,6 +149,18 @@ Something Op(boid val) {
         .value = (boid)&val
     };
 }
+
+/// Hash Table Implementation
+/// Implementation using generics
+#define HASH_TABLE(kt, vt) \
+typedef struct { kt keys[__MAX_HASH_KEYS_], vt values[__MAX_HASH_VALUES] } ht_##kt##_##vt##; \
+void ht_##kt##_##vt##_init(int nmemb, size_t size) {} \
+vt ht_##kt##_##vt##_get(kt key_holder) {} \
+void ht_##kt##_##vt##_push(kt key, vt value) {} \
+void ht_##kt##_##vt##_pop(int index) {} \
+void ht_##kt##_##vt##_pop(kt key) {} \
+void ht_##kt##_##vt##_clear() {} \
+void ht_##kt##_##vt##_free() {}
 
 
 #ifdef __cplusplus
