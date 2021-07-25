@@ -37,6 +37,10 @@
  *
  * REVISION HISTORY:
  *    0.01 - initial template library
+ *
+ * DOCUMENTATION:
+ *    define SIYOSU_NO_DEFAULT_VEC, to remove default int and char vectors and define custom vector types
+ *    use VECTOR_DEF(n) to create a vector, where n is the type of vector
  */
 
 #ifndef SIYOSU_H_
@@ -88,14 +92,6 @@ extern "C" {
 
 #if defined(__APPLE__)
 #define __MAC_OS
-#endif
-
-#ifndef __MAX_HASH_KEYS
-#define __MAX_HASH_KEYS 1024
-#endif
-
-#ifndef __MAX_HASH_VALUES
-#define __MAX_HASH_VALUES 1024
 #endif
 
 // Usage
@@ -202,7 +198,11 @@ SIYOSU_FUNC Something Op(boid val) {
 // Generics
 #define VECTOR_DEF(vt_t) \
 typedef struct { vt_t* arr, int items_l } vt_t##_vec; \
-SIYOSU_FUNC int vt_t##_vec_size(vt_t##_vec* arr) {\
+SIYOSU_FUNC void vt_t##_vec_init(vt_t##_vec* vec, int nmemb) { \
+  vec->arr = (vt_t*)calloc(nmemb, sizeof(vt_t)); \
+  vec->items_l = 0; \
+} \
+SIYOSU_FUNC int vt_t##_vec_size(vt_t##_vec* arr) { \
   return arr->items_l; \
 } \
 SIYOSU_FUNC int vt_t##_vec_index(vt_t##_vec* vec, vt_t value) { \
@@ -258,7 +258,7 @@ SIYOSU_FUNC void vt_t##_vec_clear(vt_t##_vec* vec, vt_t dv) { \
 SIYOSU_FUNC void vt_t##_vec_free(vt_t##_vec* vec) { \
   free(vec->arr); \
   vec->items_l = 0; \
-} \
+} 
 
 #define VEC_FOR_EACH_FN(arr, fn) \
   for (size_t _ind = 0; \
@@ -267,10 +267,15 @@ _ind++) { \
     fn(arr[_ind]); \
 }
 
+#if !defined(SIYOSU_NO_DEFAULT_VEC)
+VECTOR_DEF(int);
+VECTOR_DEF(char);
+#endif
+
 // Hash Table Implementation
 // Implementation using generics
 #define HASH_TABLE(kt, vt) \
-typedef struct { kt keys[__MAX_HASH_KEYS_], vt values[__MAX_HASH_VALUES] } ht_##kt##_##vt##; \
+typedef struct { kt* keys, vt* values, size_t item_sl } ht_##kt##_##vt##; \
 SIYOSU_FUNC void ht_##kt##_##vt##_init(int nmemb, size_t size) {} \
 SIYOSU_FUNC vt ht_##kt##_##vt##_get(kt key_holder) {} \
 SIYOSU_FUNC void ht_##kt##_##vt##_push(kt key, vt value) {} \
@@ -278,6 +283,10 @@ SIYOSU_FUNC void ht_##kt##_##vt##_pop(int index) {} \
 SIYOSU_FUNC void ht_##kt##_##vt##_pop(kt key) {} \
 SIYOSU_FUNC void ht_##kt##_##vt##_clear() {} \
 SIYOSU_FUNC void ht_##kt##_##vt##_free() {}
+
+#if !defined(SIYOSU_NO_DEFAULT_HT)
+HASH_TABLE(char*, int);
+#endif
 
 
 #ifdef __cplusplus
