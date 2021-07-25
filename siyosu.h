@@ -98,10 +98,10 @@ extern "C" {
 #define __MAX_HASH_VALUES 1024
 #endif
 
-/// Usage
-/// panic("This is wrong")
-/// or
-/// panic("This is the value i get %d", 10)
+// Usage
+// panic("This is a panic")
+// or
+// panic("This is the value i get %d", 10)
 #define panic(fmt, ...) \
   printf("Panicked at %d from %s\n", __LINE__, __FILE__); \
   printf("Panicked at %s\n", fmt, ##__VA_ARGS__); \
@@ -111,57 +111,61 @@ SIYOSU_FUNC bool s__vn(boid ptr) {
     return ptr == NULL;
 }
 
-/// memory funtions
-/// malloc
+// memory funtions
+// malloc
 SIYOSU_FUNC boid s_malloc(size_t size) {
     boid mem = malloc(size);
-    if (s__vn(mem))
+    if (s__vn(mem)) {
         panic("Unable to allocate memory")
-        else
-            return mem
-        }
+    } else {
+        return mem
+    }
+}
 
-/// free
+// free
 SIYOSU_FUNC boid s_free(boid ptr) {
     free(ptr);
 }
 
-/// calloc
+// calloc
 SIYOSU_FUNC boid s_calloc(size_t nmemb, size_t size) {
     boid mem = calloc(nmemb, size);
-    if (s__vn(mem))
+    if (s__vn(mem)) {
         panic("Unable to allocate memory")
-        else
-            return mem
-        }
+    } else {
+        return mem
+    }
+}
 
 #if defined(SIYOSU_REALLOC)
 
-/// realloc
+// realloc
 SIYOSU_FUNC boid s_realloc(size_t size) {
     boid smem = malloc(size);
     s_free(smem);
     realloc(smem, size);
-    if (s__vn(smem))
+    if (s__vn(smem)) {
         panic("Unable to allocate memory")
-        else
-            return smem
-        }
+    } else {
+        return smem
+    }
+}
 
-/// reallocarray
+// reallocarray
 SIYOSU_FUNC boid s_reallocarray(size_t nmemb, size_t size) {
     boid smem = calloc(nmemb, size);
     s_free(smem);
     reallocarray(smem, nmemb, size);
-    if (s__vn(smem))
+    if (s__vn(smem)) {
         panic("Unable to allocate memory")
-        else
-            return smem
-        }
+    } else {
+        return smem
+    }
+}
 
 #endif
 
-/// Inspired from rust's Result<> and Option<>
+// Inspired from rust's Result<> and Option<>
 typedef struct {
     boid value;
 } Something;
@@ -186,46 +190,94 @@ SIYOSU_FUNC boid unwrap_or_panic(Something* smtg) {
     return val;
 }
 
-/// To create something
-/// from rust's Some and Ok
+// To create something
+// from rust's Some and Ok
 SIYOSU_FUNC Something Op(boid val) {
     return (Something) {
         .value = (boid)&val
     };
 }
 
-/// Vector Implementation
-/// Generics
+// Vector Implementation
+// Generics
 #define VECTOR_DEF(vt_t) \
-  typedef struct { vt_t arr[__MAX_HASH_KEYS] } vt_t##_vec; \
-  SIYOSU_FUNC int vt_t##_vec_index(vt_t value) {} \
-  SIYOSU_FUNC int vt_t##_vec_count(vt_t value) {} \
-  SIYOSU_FUNC vt_t vt_t##_vec_get(int index) {} \
-  SIYOSU_FUNC void vt_t##_vec_push(vt_t value) {} \
-  SIYOSU_FUNC void vt_t##_vec_pop(int index) {} \
-  SIYOSU_FUNC void vt_t##_vec_clear() {} \
-  SIYOSU_FUNC void vt_t##_vec_free() {} \
+typedef struct { vt_t* arr, int items_l } vt_t##_vec; \
+SIYOSU_FUNC int vt_t##_vec_size(vt_t##_vec* arr) {\
+  return arr->items_l; \
+} \
+SIYOSU_FUNC int vt_t##_vec_index(vt_t##_vec* vec, vt_t value) { \
+int indx = -1; \
+for (size_t _ind = 0; \
+        _ind < vt_t##_vec_size(vec); \
+        _ind++) { \
+    if (vec->arr[_ind] == value) { \
+        indx = _ind; \
+        break; \
+    } \
+} \
+return indx; \
+} \
+SIYOSU_FUNC int vt_t##_vec_count(vt_t##_vec* vec, vt_t value) { \
+    int nmembs = 0; \
+    for (size_t _ind = 0; \
+            _ind < vt_t##_vec_size(vec); \
+            _ind++) { \
+        if (vec->arr[_ind] == value) { \
+            nmembs++; \
+        } \
+    } \
+    return nmembs; \
+} \
+SIYOSU_FUNC vt_t vt_t##_vec_get(vt_t##_vec* vec, int index) { \
+    return vec->arr[index]; \
+} \
+SIYOSU_FUNC void vt_t##_vec_push(vt_t##_vec* vec, vt_t value) { \
+    vec->arr[vt_t##_vec_size(vec)+1] = value; \
+    vec-items_l++; \
+} \
+SIYOSU_FUNC void vt_t##_vec_pop(vt_t##_vec* vec, int index) { \
+  vt_t##_vec nvec;\
+  for (size_t _ind = 0; \
+          _ind < vt_t##_vec_size(vec); \
+          _ind++) { \
+    if (!(_ind == index)) { \
+      nvec.arr[nvec.items_l+1] = vec->arr[_ind]\
+      nvec.items_l++; \
+    } \
+  } \
+  *vec = nvec; \
+} \
+SIYOSU_FUNC void vt_t##_vec_clear(vt_t##_vec* vec, vt_t dv) { \
+  for (size_t _ind = 0; \
+          _ind < vt_t##_vec_size(vec); \
+          _ind++) { \
+    vec->arr[_ind] = dv;\
+    vec->items_l--; \
+  } \
+} \
+SIYOSU_FUNC void vt_t##_vec_free(vt_t##_vec* vec) { \
+  free(vec->arr); \
+  vec->items_l = 0; \
+} \
 
 #define VEC_FOR_EACH_FN(arr, fn) \
-  for (size_t _ind = 0;
-_ind < sizeof(arr) / sizeof(arr[0]);
-_ind++) {
-    \
-    fn(arr[_ind]);
-    \
+  for (size_t _ind = 0; \
+_ind < sizeof(arr) / sizeof(arr[0]); \
+_ind++) { \
+    fn(arr[_ind]); \
 }
 
-/// Hash Table Implementation
-/// Implementation using generics
+// Hash Table Implementation
+// Implementation using generics
 #define HASH_TABLE(kt, vt) \
-  typedef struct { kt keys[__MAX_HASH_KEYS_], vt values[__MAX_HASH_VALUES] } ht_##kt##_##vt##; \
-  SIYOSU_FUNC void ht_##kt##_##vt##_init(int nmemb, size_t size) {} \
-  SIYOSU_FUNC vt ht_##kt##_##vt##_get(kt key_holder) {} \
-  SIYOSU_FUNC void ht_##kt##_##vt##_push(kt key, vt value) {} \
-  SIYOSU_FUNC void ht_##kt##_##vt##_pop(int index) {} \
-  SIYOSU_FUNC void ht_##kt##_##vt##_pop(kt key) {} \
-  SIYOSU_FUNC void ht_##kt##_##vt##_clear() {} \
-  SIYOSU_FUNC void ht_##kt##_##vt##_free() {}
+typedef struct { kt keys[__MAX_HASH_KEYS_], vt values[__MAX_HASH_VALUES] } ht_##kt##_##vt##; \
+SIYOSU_FUNC void ht_##kt##_##vt##_init(int nmemb, size_t size) {} \
+SIYOSU_FUNC vt ht_##kt##_##vt##_get(kt key_holder) {} \
+SIYOSU_FUNC void ht_##kt##_##vt##_push(kt key, vt value) {} \
+SIYOSU_FUNC void ht_##kt##_##vt##_pop(int index) {} \
+SIYOSU_FUNC void ht_##kt##_##vt##_pop(kt key) {} \
+SIYOSU_FUNC void ht_##kt##_##vt##_clear() {} \
+SIYOSU_FUNC void ht_##kt##_##vt##_free() {}
 
 
 #ifdef __cplusplus
