@@ -6,9 +6,9 @@
 
 // boolean declaration
 #if defined(__STDC__) && __STDC_VERSION__ >= 199901L
-    #include <stdbool.h>
+#include <stdbool.h>
 #elif !defined(__cplusplus) && !defined(bool)
-    typedef enum bool { false, true } bool;
+typedef enum bool { false, true } bool;
 #endif
 
 
@@ -31,7 +31,7 @@ extern "C" {
 #define panic(fmt, ...) \
   printf("Panicked at %d from %s\n", __LINE__, __FILE__); \
   printf("Panicked at %s\n", fmt, ##__VA_ARGS__); \
-  abort(); 
+  abort();
 
 #define print(fmt, ...) \
   printf("%s", fmt, ##__VA_ARGS__);
@@ -56,33 +56,33 @@ extern "C" {
 #endif
 
 typedef struct {
-  void* value;
+    void* value;
 } Something;
 
 boid unwrap(Something* smtg) {
-  boid val;
-  if (smtg->value != NULL) {
-    val = (boid)smtg->value;
-  } else {
-    val = 0;
-  }
-  return val;
+    boid val;
+    if (smtg->value != NULL) {
+        val = (boid)smtg->value;
+    } else {
+        val = 0;
+    }
+    return val;
 }
 
 boid unwrap_or_panic(Something* smtg) {
-  boid val;
-  if (smtg->value != NULL) {
-    val = (boid)smtg->value;
-  } else {
-    panic("Value error on unwrap");
-  }
-  return val;
+    boid val;
+    if (smtg->value != NULL) {
+        val = (boid)smtg->value;
+    } else {
+        panic("Value error on unwrap");
+    }
+    return val;
 }
 
 Something Op(boid val) {
-  return (Something) {
-    .value = (boid)&val
-  };
+    return (Something) {
+        .value = (boid)&val
+    };
 }
 
 
