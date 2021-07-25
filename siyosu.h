@@ -55,8 +55,59 @@ extern "C" {
 #define __MAC_OS
 #endif
 
+/// memory funtions
+/// malloc
+boid s_malloc(size_t size) {
+    boid mem = malloc(size);
+    if (mem == NULL)
+        panic("Unable to allocate memory")
+        else
+            return mem
+        }
+
+/// free
+boid s_free(boid ptr) {
+    free(ptr);
+}
+
+/// calloc
+boid s_calloc(size_t nmemb, size_t size) {
+    boid mem = calloc(nmemb, size);
+    if (mem == NULL)
+        panic("Unable to allocate memory")
+        else
+            return mem
+        }
+
+#if defined(SIYOSU_REALLOC)
+
+/// realloc
+boid s_realloc(size_t size) {
+    boid smem = malloc(size);
+    s_free(smem);
+    realloc(smem, size);
+    if (smem == NULL)
+        panic("Unable to allocate memory")
+        else
+            return smem
+        }
+
+/// reallocarray
+boid s_reallocarray(size_t nmemb, size_t size) {
+    boid smem = calloc(nmemb, size);
+    s_free(smem);
+    reallocarray(smem, nmemb, size);
+    if (smem == NULL)
+        panic("Unable to allocate memory")
+        else
+            return smem
+        }
+
+#endif
+
+/// Inspired from rust's Result<> and Option<>
 typedef struct {
-    void* value;
+    boid value;
 } Something;
 
 boid unwrap(Something* smtg) {
@@ -79,6 +130,8 @@ boid unwrap_or_panic(Something* smtg) {
     return val;
 }
 
+/// To create something
+/// from rust's Some and Ok
 Something Op(boid val) {
     return (Something) {
         .value = (boid)&val
