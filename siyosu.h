@@ -1,5 +1,5 @@
 /*
- * siyosu.h - v0.01 MIT Licensed - https://github.com/NrdyBhu1/siyosu.h
+ * siyosu.h - v0.02 MIT Licensed - https://github.com/NrdyBhu1/siyosu.h
  *                                 no warranty implied; use at your own risk
  * Do this:
  *    #define SIYOSU_IMPLEMENTATION
@@ -36,12 +36,41 @@
  * SOFTWARE.
  *
  * REVISION HISTORY:
+ *    0.02 - Finished Vector template and added string functions
  *    0.01 - initial template library
  *
  * DOCUMENTATION:
  *    define SIYOSU_NO_DEFAULT_VEC, to remove default int and char vectors and define custom vector types
  *    use VECTOR_DEF(n) to create a vector, where n is the type of vector
+ *
+ *    Vector functions:
+ *        vec_init - Initialize the vector with a default value
+ *        vec_clear - clear the entire vector
+ *        vec_free - free the vector 
+ *        vec_push - push an element into the vector form the back
+ *        vec_pop - remove and return an element at an index
+ *        vec_get - return an element at an index
+ *        vec_index - returns the first index at where the element is found
+ *        vec_count - returns the number of times a specified value occurs in a vector
+ *    
+ *    String functions:
+ *        str_len - returns the length of a string
+ *        str_copy - copy the text from the src to dest
+ *        str_eq - checks if both the strings are equal
+ *        str_join - joins two strings and returns it
+ *        str_index - searches the string for a specified value and returns the position of where it was found
+ *        str_count - returns the number of times a specified value occurs in a string
+ *        str_split - splits the string in to an array with a specified deliminator
+ *        str_substr - checks if one string is a sub string of a string
+ *        str_subchar - checks if a char is a sub string of a string
+ *        str_startswith - check if the string starts with a specified char or string
+ *        str_endswith - check if the string ends with a specified char or string
+ *        str_rep - replaces a string in a string with another string
+ *
  */
+
+#include <string.h>
+#include <stdint.h>
 
 #ifndef SIYOSU_H_
 #define SIYOSU_H_
@@ -69,6 +98,7 @@ extern "C" {
 // belh
 #define boid void*
 #define string char*
+#define u4 unsigned int
 
 #define print(fmt, ...) \
   printf("%s", fmt, ##__VA_ARGS__);
@@ -170,6 +200,8 @@ SIYOSU_FUNC Something Op(boid val) {
     };
 }
 
+#if !defined(__cplusplus)
+// only for c
 // Vector Implementation
 // Generics
 #define VECTOR_DEF(vt_t) \
@@ -254,13 +286,14 @@ VECTOR_DEF(char);
 
 // Hash Table Implementation
 // Implementation using generics
+// #if !defined(vec_##kt) 
+// VECTOR_DEF(kt); 
+// #endif 
+// #if !defined(vec_##vt) 
+// VECTOR_DEF(vt); 
+// #endif
+
 #define HASH_TABLE(kt, vt) \
-#if !defined(vec_##kt) \
-VECTOR_DEF(kt); \
-#endif \
-#if !defined(vec_##vt) \
-VECTOR_DEF(vt); \
-#endif \
 typedef struct { kt* keys, vt* values, size_t item_sl } ht_##kt##_##vt##; \
 SIYOSU_FUNC void ht_##kt##_##vt##_init(int nmemb, size_t size) {} \
 SIYOSU_FUNC vt ht_##kt##_##vt##_get(kt key_holder) {} \
@@ -274,10 +307,207 @@ SIYOSU_FUNC void ht_##kt##_##vt##_free() {}
 HASH_TABLE(char*, int);
 #endif
 
+#endif
+
+// String Functions
+// No string manipulation flags
+#if !defined(SIYOSU_NO_STRING_MAN)
+
+u4 str_len(char* s) {
+  u4 len = 0;
+
+  if (!s__vn(s)) {
+    while (*s++) len++;
+  }
+
+  return len;
+}
+
+void str_copy(char* dest, char* src) {
+  if (!s__vn(dest) && !s__vn(src)) {
+    while (*src != '\0') {
+      *dest = *src;
+      dest++;
+      src++;
+    }
+    *dest = '\0';
+  }
+}
+
+bool str_eq(char* str1, char* str2) {
+  return strcmp(str1, str2) == 0;
+}
+
+char* str_join(char* str1, char* str2) {
+  char* res;
+  if (!s__vn(str1) && !s__vn(str2)) {
+    while (*str1 != '\0') {
+      *res = *str1;
+      res++;
+      str1++;
+    }
+    while (*str2 != '\0') {
+      *res = *str2;
+      res++;
+      str2++;
+    }
+    *res = '\0';
+  }
+
+  return res;
+}
+
+u4 str_index_c(char* text, char st) {
+  u4 ind = -1;
+  u4 pos = 0;
+  if (!s__vn(text) && !s__vn((boid)&st)) {
+    while (*text != '\0') {
+      if (*text == st) {
+        ind = pos;
+      }
+      text++;
+      pos++;
+    }
+  }
+  return ind;
+}
+
+u4 str_index_s(char* text, char* str2) {
+  u4 ind = -1;
+  u4 pos = str_index_c(text, str2[0]);
+  u4 seq = 0;
+  for(u4 i = 0; i < str_len(str2); i++) {
+    if (str2[i] == text[(int)pos]) {
+      seq++;
+    }
+  }
+  if (seq == str_len(str2)) ind = pos;
+  return ind;
+}
+
+int str_count(char* text, char st) {
+  int count = 0;
+  if (!s__vn(text) && !s__vn((boid)&st)) {
+    while (*text != '\0') {
+      if (*text == st) {
+        count++;
+      }
+      text++;
+    }
+  }
+  return count;
+}
+
+char** str_split(char* str, char deliminator, int* len) {
+  char** res = { 0 };
+  int lent = 0;
+  char* buffer = { 0 };
+  while (*str != '\0') {
+    if (*str == deliminator) {
+      *buffer = '\0';
+      *res = buffer;
+      buffer = "";
+      res++;
+      lent++;
+    } else {
+      *buffer = *str;
+      buffer++;
+      str++;
+    }
+  }
+  *len = lent;
+  return res;
+}
+
+bool str_substr(char* text, char* sub_str) {
+  u4 ind = str_index_c(text, sub_str[0]);
+  if (ind >= 0) {
+    u4 seq = 0;
+    for (u4 i = 0; i < str_len(sub_str); i++) {
+      if (sub_str[i] == text[ind+i]) seq++;
+    }
+    return str_len(sub_str) == seq;
+  }
+  return false;
+}
+
+bool str_subchar(char* text, char sub_char) {
+  return str_count(text, sub_char) > 0;
+}
+
+bool str_startswith(char* text, char* sub_str) {
+  u4 seq = 0;
+  for (u4 i = 0; i < str_len(sub_str); i++) {
+    if (sub_str[i] == text[i]) seq++;
+  }
+  return str_len(sub_str) == seq;
+}
+
+// TODO: find a way to compare end of both strings
+bool str_endswith(char* text, char* sub_str) {
+  (void)text;
+  (void)sub_str;
+  return false;
+}
+
+char* str_rep_c(char* text, char rep, char fin) {
+  u4 ind = str_index_c(text, rep);
+  if (ind >= 0) {
+    u4 pos = 0;
+    char* result = { 0 };
+    while (*text != '\0') {
+      if (pos == ind) {
+        *result = fin;
+        pos++;
+        result++;
+      } else {
+        *result = *text;
+        pos++;
+        text++;
+      }
+    }
+    return result;
+  }
+  return text;
+}
+
+// TODO: Make it more neater
+char* str_rep_s(char* text, char* rep, char* fin) {
+  u4 ind_s = str_index_s(text, rep);
+  if (ind_s >= 0) {
+    u4 pos = 0;
+    char* result = { 0 };
+    while (*text != '\0') {
+      if (pos == ind_s) {
+        break;
+      } 
+      *result = *text;
+      pos++;
+      text++;
+    }
+    while (*fin != '\0') {
+      *result = *fin;
+      result++;
+      fin++;
+    }
+    for(u4 i = 0; i < str_len(rep); i++) {
+      text++;
+    }
+    while (*text != '\0') {
+      *result = *text;
+      text++;
+    }
+    return result;
+  }
+  return text;
+}
+
+#endif // SIYOSU_NO_STRING_MAN
 
 #ifdef __cplusplus
 }
 #endif
-#endif
+
+#endif // SIYOSU_IMPLEMENTATION
 
 #endif // SIYOSU_H_

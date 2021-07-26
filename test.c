@@ -18,5 +18,16 @@ int main() {
         vec_int_push(&vec, i);
     }
     VEC_FOR_EACH_FN(vec, pr)
+
+    char* hello = "dsads Test bdsajldasdda sada sada";
+    print("Subset str: ");
+    println(str_substr(hello, "Test") ? "true": "false");
+    print("Starts with: ");
+    println(str_startswith(hello, "Tes") ? "true": "false");
+    int hello_len;
+    char** hello_arr = str_split(hello, ' ', &hello_len);
+    for(u4 i = 0; i < hello_len; i++) {
+      printf("%s", hello_arr[i]);
+    }
     return 0;
 }
