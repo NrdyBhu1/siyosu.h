@@ -56,6 +56,10 @@ typedef enum bool { false, true } bool;
 
 #if defined(SIYOSU_IMPLEMENTATION)
 
+#if defined(SIYOSU_NO_WARNINGS)
+#pragma GCC diagnostic ignored "-Wunused-function" 
+#endif
+
 // Support even C++
 // idk why though
 #ifdef __cplusplus
@@ -72,7 +76,11 @@ extern "C" {
 #define println(fmt, ...) \
   printf("%s\n", fmt, ##__VA_ARGS__);
 
+#if !defined(SIYOSU_NO_INLINE)
+#define SIYOSU_FUNC
+#else
 #define SIYOSU_FUNC inline
+#endif
 
 #if defined(__linux__)
 #define __LINUX_OS
@@ -115,7 +123,7 @@ SIYOSU_FUNC boid s_malloc(size_t size) {
 }
 
 // free
-SIYOSU_FUNC boid s_free(boid ptr) {
+SIYOSU_FUNC void s_free(boid ptr) {
     free(ptr);
 }
 
