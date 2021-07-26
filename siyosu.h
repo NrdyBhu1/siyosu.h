@@ -46,13 +46,13 @@
  *    Vector functions:
  *        vec_init - Initialize the vector with a default value
  *        vec_clear - clear the entire vector
- *        vec_free - free the vector 
+ *        vec_free - free the vector
  *        vec_push - push an element into the vector form the back
  *        vec_pop - remove and return an element at an index
  *        vec_get - return an element at an index
  *        vec_index - returns the first index at where the element is found
  *        vec_count - returns the number of times a specified value occurs in a vector
- *    
+ *
  *    String functions:
  *        str_len - returns the length of a string
  *        str_copy - copy the text from the src to dest
@@ -86,7 +86,7 @@ typedef enum bool { false, true } bool;
 #if defined(SIYOSU_IMPLEMENTATION)
 
 #if defined(SIYOSU_NO_WARNINGS)
-#pragma GCC diagnostic ignored "-Wunused-function" 
+#pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
 // Support even C++
@@ -270,7 +270,7 @@ SIYOSU_FUNC void vec_##vt_t##_clear(vec_##vt_t* vec, vt_t dv) { \
 SIYOSU_FUNC void vec_##vt_t##_free(vec_##vt_t* vec) { \
   free(vec->arr); \
   vec->items_l = 0; \
-} 
+}
 
 #define VEC_FOR_EACH_FN(vec, fn) \
   for (size_t _ind = 0; \
@@ -286,11 +286,11 @@ VECTOR_DEF(char);
 
 // Hash Table Implementation
 // Implementation using generics
-// #if !defined(vec_##kt) 
-// VECTOR_DEF(kt); 
-// #endif 
-// #if !defined(vec_##vt) 
-// VECTOR_DEF(vt); 
+// #if !defined(vec_##kt)
+// VECTOR_DEF(kt);
+// #endif
+// #if !defined(vec_##vt)
+// VECTOR_DEF(vt);
 // #endif
 
 #define HASH_TABLE(kt, vt) \
@@ -314,192 +314,192 @@ HASH_TABLE(char*, int);
 #if !defined(SIYOSU_NO_STRING_MAN)
 
 u4 str_len(char* s) {
-  u4 len = 0;
+    u4 len = 0;
 
-  if (!s__vn(s)) {
-    while (*s++) len++;
-  }
+    if (!s__vn(s)) {
+        while (*s++) len++;
+    }
 
-  return len;
+    return len;
 }
 
 void str_copy(char* dest, char* src) {
-  if (!s__vn(dest) && !s__vn(src)) {
-    while (*src != '\0') {
-      *dest = *src;
-      dest++;
-      src++;
+    if (!s__vn(dest) && !s__vn(src)) {
+        while (*src != '\0') {
+            *dest = *src;
+            dest++;
+            src++;
+        }
+        *dest = '\0';
     }
-    *dest = '\0';
-  }
 }
 
 bool str_eq(char* str1, char* str2) {
-  return strcmp(str1, str2) == 0;
+    return strcmp(str1, str2) == 0;
 }
 
 char* str_join(char* str1, char* str2) {
-  char* res;
-  if (!s__vn(str1) && !s__vn(str2)) {
-    while (*str1 != '\0') {
-      *res = *str1;
-      res++;
-      str1++;
+    char* res;
+    if (!s__vn(str1) && !s__vn(str2)) {
+        while (*str1 != '\0') {
+            *res = *str1;
+            res++;
+            str1++;
+        }
+        while (*str2 != '\0') {
+            *res = *str2;
+            res++;
+            str2++;
+        }
+        *res = '\0';
     }
-    while (*str2 != '\0') {
-      *res = *str2;
-      res++;
-      str2++;
-    }
-    *res = '\0';
-  }
 
-  return res;
+    return res;
 }
 
 u4 str_index_c(char* text, char st) {
-  u4 ind = -1;
-  u4 pos = 0;
-  if (!s__vn(text) && !s__vn((boid)&st)) {
-    while (*text != '\0') {
-      if (*text == st) {
-        ind = pos;
-      }
-      text++;
-      pos++;
+    u4 ind = -1;
+    u4 pos = 0;
+    if (!s__vn(text) && !s__vn((boid)&st)) {
+        while (*text != '\0') {
+            if (*text == st) {
+                ind = pos;
+            }
+            text++;
+            pos++;
+        }
     }
-  }
-  return ind;
+    return ind;
 }
 
 u4 str_index_s(char* text, char* str2) {
-  u4 ind = -1;
-  u4 pos = str_index_c(text, str2[0]);
-  u4 seq = 0;
-  for(u4 i = 0; i < str_len(str2); i++) {
-    if (str2[i] == text[(int)pos]) {
-      seq++;
+    u4 ind = -1;
+    u4 pos = str_index_c(text, str2[0]);
+    u4 seq = 0;
+    for(u4 i = 0; i < str_len(str2); i++) {
+        if (str2[i] == text[(int)pos]) {
+            seq++;
+        }
     }
-  }
-  if (seq == str_len(str2)) ind = pos;
-  return ind;
+    if (seq == str_len(str2)) ind = pos;
+    return ind;
 }
 
 int str_count(char* text, char st) {
-  int count = 0;
-  if (!s__vn(text) && !s__vn((boid)&st)) {
-    while (*text != '\0') {
-      if (*text == st) {
-        count++;
-      }
-      text++;
+    int count = 0;
+    if (!s__vn(text) && !s__vn((boid)&st)) {
+        while (*text != '\0') {
+            if (*text == st) {
+                count++;
+            }
+            text++;
+        }
     }
-  }
-  return count;
+    return count;
 }
 
 char** str_split(char* str, char deliminator, int* len) {
-  char** res = { 0 };
-  int lent = 0;
-  char* buffer = { 0 };
-  while (*str != '\0') {
-    if (*str == deliminator) {
-      *buffer = '\0';
-      *res = buffer;
-      buffer = "";
-      res++;
-      lent++;
-    } else {
-      *buffer = *str;
-      buffer++;
-      str++;
+    char** res = { 0 };
+    int lent = 0;
+    char* buffer = { 0 };
+    while (*str != '\0') {
+        if (*str == deliminator) {
+            *buffer = '\0';
+            *res = buffer;
+            buffer = "";
+            res++;
+            lent++;
+        } else {
+            *buffer = *str;
+            buffer++;
+            str++;
+        }
     }
-  }
-  *len = lent;
-  return res;
+    *len = lent;
+    return res;
 }
 
 bool str_substr(char* text, char* sub_str) {
-  u4 ind = str_index_c(text, sub_str[0]);
-  if (ind >= 0) {
-    u4 seq = 0;
-    for (u4 i = 0; i < str_len(sub_str); i++) {
-      if (sub_str[i] == text[ind+i]) seq++;
+    u4 ind = str_index_c(text, sub_str[0]);
+    if (ind >= 0) {
+        u4 seq = 0;
+        for (u4 i = 0; i < str_len(sub_str); i++) {
+            if (sub_str[i] == text[ind+i]) seq++;
+        }
+        return str_len(sub_str) == seq;
     }
-    return str_len(sub_str) == seq;
-  }
-  return false;
+    return false;
 }
 
 bool str_subchar(char* text, char sub_char) {
-  return str_count(text, sub_char) > 0;
+    return str_count(text, sub_char) > 0;
 }
 
 bool str_startswith(char* text, char* sub_str) {
-  u4 seq = 0;
-  for (u4 i = 0; i < str_len(sub_str); i++) {
-    if (sub_str[i] == text[i]) seq++;
-  }
-  return str_len(sub_str) == seq;
+    u4 seq = 0;
+    for (u4 i = 0; i < str_len(sub_str); i++) {
+        if (sub_str[i] == text[i]) seq++;
+    }
+    return str_len(sub_str) == seq;
 }
 
 // TODO: find a way to compare end of both strings
 bool str_endswith(char* text, char* sub_str) {
-  (void)text;
-  (void)sub_str;
-  return false;
+    (void)text;
+    (void)sub_str;
+    return false;
 }
 
 char* str_rep_c(char* text, char rep, char fin) {
-  u4 ind = str_index_c(text, rep);
-  if (ind >= 0) {
-    u4 pos = 0;
-    char* result = { 0 };
-    while (*text != '\0') {
-      if (pos == ind) {
-        *result = fin;
-        pos++;
-        result++;
-      } else {
-        *result = *text;
-        pos++;
-        text++;
-      }
+    u4 ind = str_index_c(text, rep);
+    if (ind >= 0) {
+        u4 pos = 0;
+        char* result = { 0 };
+        while (*text != '\0') {
+            if (pos == ind) {
+                *result = fin;
+                pos++;
+                result++;
+            } else {
+                *result = *text;
+                pos++;
+                text++;
+            }
+        }
+        return result;
     }
-    return result;
-  }
-  return text;
+    return text;
 }
 
 // TODO: Make it more neater
 char* str_rep_s(char* text, char* rep, char* fin) {
-  u4 ind_s = str_index_s(text, rep);
-  if (ind_s >= 0) {
-    u4 pos = 0;
-    char* result = { 0 };
-    while (*text != '\0') {
-      if (pos == ind_s) {
-        break;
-      } 
-      *result = *text;
-      pos++;
-      text++;
+    u4 ind_s = str_index_s(text, rep);
+    if (ind_s >= 0) {
+        u4 pos = 0;
+        char* result = { 0 };
+        while (*text != '\0') {
+            if (pos == ind_s) {
+                break;
+            }
+            *result = *text;
+            pos++;
+            text++;
+        }
+        while (*fin != '\0') {
+            *result = *fin;
+            result++;
+            fin++;
+        }
+        for(u4 i = 0; i < str_len(rep); i++) {
+            text++;
+        }
+        while (*text != '\0') {
+            *result = *text;
+            text++;
+        }
+        return result;
     }
-    while (*fin != '\0') {
-      *result = *fin;
-      result++;
-      fin++;
-    }
-    for(u4 i = 0; i < str_len(rep); i++) {
-      text++;
-    }
-    while (*text != '\0') {
-      *result = *text;
-      text++;
-    }
-    return result;
-  }
-  return text;
+    return text;
 }
 
 #endif // SIYOSU_NO_STRING_MAN
