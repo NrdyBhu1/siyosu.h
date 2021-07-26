@@ -211,17 +211,21 @@ SIYOSU_FUNC void vec_##vt_t##_push(vec_##vt_t* vec, vt_t value) { \
     vec->arr[vec_##vt_t##_size(vec)+1] = value; \
     vec->items_l++; \
 } \
-SIYOSU_FUNC void vec_##vt_t##_pop(vec_##vt_t* vec, int index) { \
+SIYOSU_FUNC vt_t vec_##vt_t##_pop(vec_##vt_t* vec, int index) { \
   vec_##vt_t nvec;\
+  vt_t v; \
   for (size_t _ind = 0; \
           _ind < vec_##vt_t##_size(vec); \
           _ind++) { \
     if (!(_ind == index)) { \
       nvec.arr[nvec.items_l+1] = vec->arr[_ind]; \
       nvec.items_l++; \
+    } else { \
+      v = vec->arr[_ind]; \
     } \
   } \
   *vec = nvec; \
+  return v; \
 } \
 SIYOSU_FUNC void vec_##vt_t##_clear(vec_##vt_t* vec, vt_t dv) { \
   for (size_t _ind = 0; \
@@ -251,6 +255,12 @@ VECTOR_DEF(char);
 // Hash Table Implementation
 // Implementation using generics
 #define HASH_TABLE(kt, vt) \
+#if !defined(vec_##kt) \
+VECTOR_DEF(kt); \
+#endif \
+#if !defined(vec_##vt) \
+VECTOR_DEF(vt); \
+#endif \
 typedef struct { kt* keys, vt* values, size_t item_sl } ht_##kt##_##vt##; \
 SIYOSU_FUNC void ht_##kt##_##vt##_init(int nmemb, size_t size) {} \
 SIYOSU_FUNC vt ht_##kt##_##vt##_get(kt key_holder) {} \
