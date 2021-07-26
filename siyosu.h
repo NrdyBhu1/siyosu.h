@@ -1,5 +1,5 @@
 /*
- * sitosu.h - v0.01 MIT Licensed - https://github.com/NrdyBhu1/siyosu.h
+ * siyosu.h - v0.01 MIT Licensed - https://github.com/NrdyBhu1/siyosu.h
  *                                 no warranty implied; use at your own risk
  * Do this:
  *    #define SIYOSU_IMPLEMENTATION
@@ -56,6 +56,10 @@ typedef enum bool { false, true } bool;
 
 #if defined(SIYOSU_IMPLEMENTATION)
 
+#if defined(SIYOSU_NO_WARNINGS)
+#pragma GCC diagnostic ignored "-Wunused-function" 
+#endif
+
 // Support even C++
 // idk why though
 #ifdef __cplusplus
@@ -72,10 +76,10 @@ extern "C" {
 #define println(fmt, ...) \
   printf("%s\n", fmt, ##__VA_ARGS__);
 
-#ifdef SIYOSU_NO_INLINE
-#define SIYOSU_FUNC static
+#if !defined(SIYOSU_NO_INLINE)
+#define SIYOSU_FUNC
 #else
-#define SIYOSU_FUNC static inline
+#define SIYOSU_FUNC inline
 #endif
 
 #if defined(__linux__)
@@ -112,14 +116,14 @@ SIYOSU_FUNC bool s__vn(boid ptr) {
 SIYOSU_FUNC boid s_malloc(size_t size) {
     boid mem = malloc(size);
     if (s__vn(mem)) {
-        panic("Unable to allocate memory")
+        panic("Unable to allocate memory");
     } else {
-        return mem
+        return mem;
     }
 }
 
 // free
-SIYOSU_FUNC boid s_free(boid ptr) {
+SIYOSU_FUNC void s_free(boid ptr) {
     free(ptr);
 }
 
@@ -127,39 +131,11 @@ SIYOSU_FUNC boid s_free(boid ptr) {
 SIYOSU_FUNC boid s_calloc(size_t nmemb, size_t size) {
     boid mem = calloc(nmemb, size);
     if (s__vn(mem)) {
-        panic("Unable to allocate memory")
+        panic("Unable to allocate memory");
     } else {
-        return mem
+        return mem;
     }
 }
-
-#if defined(SIYOSU_REALLOC)
-
-// realloc
-SIYOSU_FUNC boid s_realloc(size_t size) {
-    boid smem = malloc(size);
-    s_free(smem);
-    realloc(smem, size);
-    if (s__vn(smem)) {
-        panic("Unable to allocate memory")
-    } else {
-        return smem
-    }
-}
-
-// reallocarray
-SIYOSU_FUNC boid s_reallocarray(size_t nmemb, size_t size) {
-    boid smem = calloc(nmemb, size);
-    s_free(smem);
-    reallocarray(smem, nmemb, size);
-    if (s__vn(smem)) {
-        panic("Unable to allocate memory")
-    } else {
-        return smem
-    }
-}
-
-#endif
 
 // Inspired from rust's Result<> and Option<>
 typedef struct {
@@ -197,18 +173,18 @@ SIYOSU_FUNC Something Op(boid val) {
 // Vector Implementation
 // Generics
 #define VECTOR_DEF(vt_t) \
-typedef struct { vt_t* arr, int items_l } vt_t##_vec; \
-SIYOSU_FUNC void vt_t##_vec_init(vt_t##_vec* vec, int nmemb) { \
-  vec->arr = (vt_t*)calloc(nmemb, sizeof(vt_t)); \
+typedef struct { vt_t* arr; int items_l; } vec_##vt_t ; \
+SIYOSU_FUNC void vec_##vt_t##_init(vec_##vt_t* vec, int nmemb) { \
+  vec->arr = (vt_t*)calloc(nmemb, sizeof(vt_t) * nmemb); \
   vec->items_l = 0; \
 } \
-SIYOSU_FUNC int vt_t##_vec_size(vt_t##_vec* arr) { \
+SIYOSU_FUNC int vec_##vt_t##_size(vec_##vt_t* arr) { \
   return arr->items_l; \
 } \
-SIYOSU_FUNC int vt_t##_vec_index(vt_t##_vec* vec, vt_t value) { \
+SIYOSU_FUNC int vec_##vt_t##_index(vec_##vt_t* vec, vt_t value) { \
 int indx = -1; \
 for (size_t _ind = 0; \
-        _ind < vt_t##_vec_size(vec); \
+        _ind < vec_##vt_t##_size(vec); \
         _ind++) { \
     if (vec->arr[_ind] == value) { \
         indx = _ind; \
@@ -217,10 +193,10 @@ for (size_t _ind = 0; \
 } \
 return indx; \
 } \
-SIYOSU_FUNC int vt_t##_vec_count(vt_t##_vec* vec, vt_t value) { \
+SIYOSU_FUNC int vec_##vt_t##_count(vec_##vt_t* vec, vt_t value) { \
     int nmembs = 0; \
     for (size_t _ind = 0; \
-            _ind < vt_t##_vec_size(vec); \
+            _ind < vec_##vt_t##_size(vec); \
             _ind++) { \
         if (vec->arr[_ind] == value) { \
             nmembs++; \
@@ -228,43 +204,43 @@ SIYOSU_FUNC int vt_t##_vec_count(vt_t##_vec* vec, vt_t value) { \
     } \
     return nmembs; \
 } \
-SIYOSU_FUNC vt_t vt_t##_vec_get(vt_t##_vec* vec, int index) { \
+SIYOSU_FUNC vt_t vec_##vt_t##_get(vec_##vt_t* vec, int index) { \
     return vec->arr[index]; \
 } \
-SIYOSU_FUNC void vt_t##_vec_push(vt_t##_vec* vec, vt_t value) { \
-    vec->arr[vt_t##_vec_size(vec)+1] = value; \
-    vec-items_l++; \
+SIYOSU_FUNC void vec_##vt_t##_push(vec_##vt_t* vec, vt_t value) { \
+    vec->arr[vec_##vt_t##_size(vec)+1] = value; \
+    vec->items_l++; \
 } \
-SIYOSU_FUNC void vt_t##_vec_pop(vt_t##_vec* vec, int index) { \
-  vt_t##_vec nvec;\
+SIYOSU_FUNC void vec_##vt_t##_pop(vec_##vt_t* vec, int index) { \
+  vec_##vt_t nvec;\
   for (size_t _ind = 0; \
-          _ind < vt_t##_vec_size(vec); \
+          _ind < vec_##vt_t##_size(vec); \
           _ind++) { \
     if (!(_ind == index)) { \
-      nvec.arr[nvec.items_l+1] = vec->arr[_ind]\
+      nvec.arr[nvec.items_l+1] = vec->arr[_ind]; \
       nvec.items_l++; \
     } \
   } \
   *vec = nvec; \
 } \
-SIYOSU_FUNC void vt_t##_vec_clear(vt_t##_vec* vec, vt_t dv) { \
+SIYOSU_FUNC void vec_##vt_t##_clear(vec_##vt_t* vec, vt_t dv) { \
   for (size_t _ind = 0; \
-          _ind < vt_t##_vec_size(vec); \
+          _ind < vec_##vt_t##_size(vec); \
           _ind++) { \
     vec->arr[_ind] = dv;\
     vec->items_l--; \
   } \
 } \
-SIYOSU_FUNC void vt_t##_vec_free(vt_t##_vec* vec) { \
+SIYOSU_FUNC void vec_##vt_t##_free(vec_##vt_t* vec) { \
   free(vec->arr); \
   vec->items_l = 0; \
 } 
 
-#define VEC_FOR_EACH_FN(arr, fn) \
+#define VEC_FOR_EACH_FN(vec, fn) \
   for (size_t _ind = 0; \
-_ind < sizeof(arr) / sizeof(arr[0]); \
+_ind < vec.items_l; \
 _ind++) { \
-    fn(arr[_ind]); \
+    fn(vec.arr[_ind]); \
 }
 
 #if !defined(SIYOSU_NO_DEFAULT_VEC)
