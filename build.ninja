@@ -1,0 +1,11 @@
+
+rule cc
+  command = gcc -Wall -std=c99 -c -g ${in} -o ${out} -lm
+  description = compiling ${in} to object ${out}
+
+rule ld
+  command = gcc ${in} -o ${out}
+  description = linking ${in} to ${out}
+
+build test.o: cc test.c
+build test: ld test.o
