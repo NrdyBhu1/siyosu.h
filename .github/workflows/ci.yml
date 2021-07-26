@@ -12,6 +12,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - uses: ashutoshvarma/setup-ninja@master
       - name: Build
         run: ninja
       - name: Run tests
@@ -22,6 +23,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - uses: ashutoshvarma/setup-ninja@master
       - name: Build
         run: ninja
       - name: Run tests
@@ -32,6 +34,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - uses: ashutoshvarma/setup-ninja@master
       - name: Build
         run: ninja
       - name: Run tests
