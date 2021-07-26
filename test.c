@@ -16,8 +16,6 @@ int main() {
   for(int i = 0; i < 10; i++) {
     vec_int_push(&vec, i);
   }
-  for(int i = 0; i < 10; i++) {
-    pr(vec.arr[i]);
-  }
+  VEC_FOR_EACH_FN(vec, pr);
   return 0;
 }
