@@ -63,13 +63,16 @@
  *        str_split - splits the string in to an array with a specified deliminator
  *        str_substr - checks if one string is a sub string of a string
  *        str_subchar - checks if a char is a sub string of a string
+ *        str_rev - reverses a string
  *        str_startswith - check if the string starts with a specified char or string
  *        str_endswith - check if the string ends with a specified char or string
  *        str_rep - replaces a string in a string with another string
  *
+ *    Other:
+ *        slurp_file - read an entire file and returns a char* value of it
+ *
  */
 
-#include <string.h>
 #include <stdint.h>
 
 #ifndef SIYOSU_H_
@@ -101,7 +104,7 @@ extern "C" {
 #define u4 unsigned int
 
 #define print(fmt, ...) \
-  printf("%s", fmt, ##__VA_ARGS__);
+  printf(fmt, ##__VA_ARGS__);
 
 #define println(fmt, ...) \
   printf("%s\n", fmt, ##__VA_ARGS__);
@@ -134,7 +137,7 @@ extern "C" {
 // panic("This is the value i get %d", 10)
 #define panic(fmt, ...) \
   printf("Panicked at %d from %s\n", __LINE__, __FILE__); \
-  printf("Panicked at %s\n", fmt, ##__VA_ARGS__); \
+  printf(fmt, ##__VA_ARGS__); \
   abort();
 
 SIYOSU_FUNC bool s__vn(boid ptr) {
@@ -335,11 +338,24 @@ void str_copy(char* dest, char* src) {
 }
 
 bool str_eq(char* str1, char* str2) {
-    return strcmp(str1, str2) == 0;
+    u4 seq = 0;
+    u4 len = str_len(str1);
+    if (str_len(str1) != str_len(str2))
+        return false;
+
+    while (*str1 != '\0' && *str2 != '\0') {
+        if (*str1 == *str2)  {
+            seq++;
+        }
+        str1++;
+        str2++;
+    }
+    return len == seq;
 }
 
 char* str_join(char* str1, char* str2) {
-    char* res;
+    u4 len = str_len(str1)+str_len(str2);
+    char* res = (char*)calloc(len, sizeof(char*) * len);
     if (!s__vn(str1) && !s__vn(str2)) {
         while (*str1 != '\0') {
             *res = *str1;
@@ -399,21 +415,26 @@ int str_count(char* text, char st) {
 }
 
 char** str_split(char* str, char deliminator, int* len) {
-    char** res;
+    char** res = { NULL };
     int lent = 0;
     char* buffer = { 0 };
-    while (*str != '\0') {
-        if (*str == deliminator) {
-            *buffer = '\0';
-            **res = *buffer;
-            buffer = "";
-            res++;
-            lent++;
-        } else {
-            *buffer = *str;
-            buffer++;
-            str++;
+    res[0] = buffer;
+    if (!s__vn(str)) {
+        lent = 1;
+        while (*str != '\0') {
+            if (*str == deliminator) {
+                *buffer = '\0';
+                *res = buffer;
+                buffer = "";
+                res++;
+                lent++;
+            } else {
+                *buffer = *str;
+                buffer++;
+                str++;
+            }
         }
+
     }
     *len = lent;
     return res;
@@ -435,6 +456,15 @@ bool str_subchar(char* text, char sub_char) {
     return str_count(text, sub_char) > 0;
 }
 
+char* str_rev(char* text) {
+    char* result = (char*)calloc(str_len(text), sizeof(char*) * str_len(text));
+    for (u4 i = str_len(text)-1; i < 0; i++) {
+        result[i] = text[i];
+    }
+
+    return result;
+}
+
 bool str_startswith(char* text, char* sub_str) {
     u4 seq = 0;
     for (u4 i = 0; i < str_len(sub_str); i++) {
@@ -445,9 +475,9 @@ bool str_startswith(char* text, char* sub_str) {
 
 // TODO: find a way to compare end of both strings
 bool str_endswith(char* text, char* sub_str) {
-    (void)text;
-    (void)sub_str;
-    return false;
+    char* text2 = str_rev(text);
+    char* sub_str2 = str_rev(sub_str);
+    return str_startswith(text2, sub_str2);
 }
 
 char* str_rep_c(char* text, char rep, char fin) {
