@@ -416,27 +416,23 @@ int str_count(char* text, char st) {
 
 char** str_split(char* str, char deliminator, int* len) {
     char** res = { NULL };
-    int lent = 0;
     char* buffer = { 0 };
+    int count = 0;
     res[0] = buffer;
     if (!s__vn(str)) {
-        lent = 1;
-        while (*str != '\0') {
-            if (*str == deliminator) {
-                *buffer = '\0';
-                *res = buffer;
-                buffer = "";
-                res++;
-                lent++;
-            } else {
-                *buffer = *str;
-                buffer++;
-                str++;
+        count = 1;
+        for(u4 i = 0; i < 1024; i++) {
+            buffer[i] = str[i];
+            if (buffer[i] == '\0') break;
+            else if(buffer[i] == deliminator) {
+                buffer[i] = '\0';
+                res[count] = buffer + i + 1;
+                count++;
+                if (count == 1024) break;
             }
         }
-
     }
-    *len = lent;
+    *len = count;
     return res;
 }
 
@@ -459,7 +455,8 @@ bool str_subchar(char* text, char sub_char) {
 char* str_rev(char* text) {
     char* result = (char*)calloc(str_len(text), sizeof(char*) * str_len(text));
     for (u4 i = str_len(text)-1; i < 0; i++) {
-        result[i] = text[i];
+        if(text[i] != '\0')
+            result[i] = text[i];
     }
 
     return result;
@@ -473,7 +470,6 @@ bool str_startswith(char* text, char* sub_str) {
     return str_len(sub_str) == seq;
 }
 
-// TODO: find a way to compare end of both strings
 bool str_endswith(char* text, char* sub_str) {
     char* text2 = str_rev(text);
     char* sub_str2 = str_rev(sub_str);

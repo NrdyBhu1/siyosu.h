@@ -35,7 +35,7 @@ int main() {
     print("Ends with: ");
     println(str_endswith(hello, "ada") ? "true": "false");
     int hello_len;
-    char** hello_arr = str_split(hello, "_", &hello_len);
+    char** hello_arr = str_split(hello, '_', &hello_len);
     for(u4 i = 0; i < hello_len; i++) {
         printf("%s", hello_arr[i]);
     }
