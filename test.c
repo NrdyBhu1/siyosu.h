@@ -18,6 +18,11 @@ int main() {
         vec_int_push(&vec, i);
     }
     VEC_FOR_EACH_FN(vec, pr)
+    vec_int_free(&vec);
+
+    char* content = slurp_file("siyosu.h");
+    println("Siyosu.h: ");
+    println(content);
 
     char* hello = "dsads Test bdsajldasdda sada sada";
     print("Subset str: ");

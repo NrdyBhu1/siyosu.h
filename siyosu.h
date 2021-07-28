@@ -511,15 +511,15 @@ char* slurp_file(const char* filename) {
     char* buffer;
 
     if (f == NULL ) {
-        LogError("Unable to load file `%s`", filename);
+        panic("Unable to load file `%s`", filename);
     }
     // initialize the buffer size
     long buf_size;
     fseek(f, 0, SEEK_END);
     buf_size = ftell(f);
-    buffer = (const char*)malloc(buf_size+1);
+    buffer = (char*)malloc(buf_size+1);
     rewind(f);
-    int read = fread((char*)buffer, sizeof(const char*), buf_size, f);
+    int read = fread((char*)buffer, sizeof(char*), buf_size, f);
     (void)read;
     // close the file
     fclose(f);
