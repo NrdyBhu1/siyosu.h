@@ -66,10 +66,10 @@
  *        str_rev - reverses a string
  *        str_startswith - check if the string starts with a specified char or string
  *        str_endswith - check if the string ends with a specified char or string
- *        str_rep - replaces a string in a string with another string
+ *        str_rep - replaces a substring in a string with another string
  *
  *    Other:
- *        slurp_file - read an entire file and returns a char* value of it
+ *        slurp_file - read an entire file and returns a string value of it
  *
  */
 
@@ -101,7 +101,7 @@ extern "C" {
 // belh
 #define boid void*
 #define string char*
-#define u4 unsigned int
+typedef unsigned int u4;
 
 #define print(fmt, ...) \
   printf(fmt, ##__VA_ARGS__);
@@ -203,6 +203,27 @@ SIYOSU_FUNC Something Op(boid val) {
     };
 }
 
+typedef struct {
+    int status;
+    char* output;
+} CommandOutput;
+
+CommandOutput CMD(const char* command, ...) {
+    CommandOutput co;
+
+    FILE* f = popen(command, "r");
+    fseek(f, 0, SEEK_END);
+    long buf_size = ftell(f);
+    rewind(f);
+    char* buffer = (char*)malloc(buf_size+1);
+    fread((char*)buffer, sizeof(char*), buf_size, f);
+    co.status = pclose(f);
+    buffer[buf_size] = '\0';
+    co.output = buffer;
+
+    return co;
+}
+
 #if !defined(__cplusplus)
 // only for c
 // Vector Implementation
@@ -248,6 +269,7 @@ SIYOSU_FUNC void vec_##vt_t##_push(vec_##vt_t* vec, vt_t value) { \
 } \
 SIYOSU_FUNC vt_t vec_##vt_t##_pop(vec_##vt_t* vec, int index) { \
   vec_##vt_t nvec;\
+  vec_##vt_t##_init(&nvec, vec->items_l); \
   vt_t v; \
   for (size_t _ind = 0; \
           _ind < vec_##vt_t##_size(vec); \
@@ -307,7 +329,7 @@ SIYOSU_FUNC void ht_##kt##_##vt##_clear() {} \
 SIYOSU_FUNC void ht_##kt##_##vt##_free() {}
 
 #if !defined(SIYOSU_NO_DEFAULT_HT)
-HASH_TABLE(char*, int);
+HASH_TABLE(string, int);
 #endif
 
 #endif
@@ -316,7 +338,7 @@ HASH_TABLE(char*, int);
 // No string manipulation flags
 #if !defined(SIYOSU_NO_STRING_MAN)
 
-u4 str_len(char* s) {
+u4 str_len(string s) {
     u4 len = 0;
 
     if (!s__vn(s)) {
@@ -326,7 +348,7 @@ u4 str_len(char* s) {
     return len;
 }
 
-void str_copy(char* dest, char* src) {
+void str_copy(string dest, string src) {
     if (!s__vn(dest) && !s__vn(src)) {
         while (*src != '\0') {
             *dest = *src;
@@ -337,7 +359,7 @@ void str_copy(char* dest, char* src) {
     }
 }
 
-bool str_eq(char* str1, char* str2) {
+bool str_eq(string str1, string str2) {
     u4 seq = 0;
     u4 len = str_len(str1);
     if (str_len(str1) != str_len(str2))
@@ -353,9 +375,9 @@ bool str_eq(char* str1, char* str2) {
     return len == seq;
 }
 
-char* str_join(char* str1, char* str2) {
+string str_join(string str1, string str2) {
     u4 len = str_len(str1)+str_len(str2);
-    char* res = (char*)calloc(len, sizeof(char*) * len);
+    string res = (string)calloc(len, sizeof(string) * len);
     if (!s__vn(str1) && !s__vn(str2)) {
         while (*str1 != '\0') {
             *res = *str1;
@@ -373,7 +395,7 @@ char* str_join(char* str1, char* str2) {
     return res;
 }
 
-u4 str_index_c(char* text, char st) {
+u4 str_index_c(string text, char st) {
     u4 ind = -1;
     u4 pos = 0;
     if (!s__vn(text) && !s__vn((boid)&st)) {
@@ -388,7 +410,7 @@ u4 str_index_c(char* text, char st) {
     return ind;
 }
 
-u4 str_index_s(char* text, char* str2) {
+u4 str_index_s(string text, string str2) {
     u4 ind = -1;
     u4 pos = str_index_c(text, str2[0]);
     u4 seq = 0;
@@ -401,7 +423,7 @@ u4 str_index_s(char* text, char* str2) {
     return ind;
 }
 
-int str_count(char* text, char st) {
+int str_count(string text, char st) {
     int count = 0;
     if (!s__vn(text) && !s__vn((boid)&st)) {
         while (*text != '\0') {
@@ -414,9 +436,9 @@ int str_count(char* text, char st) {
     return count;
 }
 
-char** str_split(char* str, char deliminator, int* len) {
-    char** res = { NULL };
-    char* buffer = { 0 };
+string* str_split(string str, char deliminator, int* len) {
+    string* res = { NULL };
+    string buffer = { 0 };
     int count = 0;
     res[0] = buffer;
     if (!s__vn(str)) {
@@ -436,7 +458,7 @@ char** str_split(char* str, char deliminator, int* len) {
     return res;
 }
 
-bool str_substr(char* text, char* sub_str) {
+bool str_substr(string text, string sub_str) {
     u4 ind = str_index_c(text, sub_str[0]);
     if (ind >= 0) {
         u4 seq = 0;
@@ -448,21 +470,25 @@ bool str_substr(char* text, char* sub_str) {
     return false;
 }
 
-bool str_subchar(char* text, char sub_char) {
+bool str_subchar(string text, char sub_char) {
     return str_count(text, sub_char) > 0;
 }
 
-char* str_rev(char* text) {
-    char* result = (char*)calloc(str_len(text), sizeof(char*) * str_len(text));
-    for (u4 i = str_len(text)-1; i < 0; i++) {
-        if(text[i] != '\0')
+string str_rev(string text) {
+    string result = (string)calloc(str_len(text), sizeof(string) * str_len(text));
+    for (u4 i = str_len(text)-1; i > 0; i--) {
+        if(text[i] != '\0') {
+            printf("%d\n", text[i]);
             result[i] = text[i];
+        }
     }
+
+    printf("%s\n", result);
 
     return result;
 }
 
-bool str_startswith(char* text, char* sub_str) {
+bool str_startswith(string text, string sub_str) {
     u4 seq = 0;
     for (u4 i = 0; i < str_len(sub_str); i++) {
         if (sub_str[i] == text[i]) seq++;
@@ -470,17 +496,17 @@ bool str_startswith(char* text, char* sub_str) {
     return str_len(sub_str) == seq;
 }
 
-bool str_endswith(char* text, char* sub_str) {
-    char* text2 = str_rev(text);
-    char* sub_str2 = str_rev(sub_str);
+bool str_endswith(string text, string sub_str) {
+    string text2 = str_rev(text);
+    string sub_str2 = str_rev(sub_str);
     return str_startswith(text2, sub_str2);
 }
 
-char* str_rep_c(char* text, char rep, char fin) {
+string str_rep_c(string text, char rep, char fin) {
     u4 ind = str_index_c(text, rep);
     if (ind >= 0) {
         u4 pos = 0;
-        char* result = { 0 };
+        string result = { 0 };
         while (*text != '\0') {
             if (pos == ind) {
                 *result = fin;
@@ -498,11 +524,11 @@ char* str_rep_c(char* text, char rep, char fin) {
 }
 
 // TODO: Make it more neater
-char* str_rep_s(char* text, char* rep, char* fin) {
+string str_rep_s(string text, string rep, string fin) {
     u4 ind_s = str_index_s(text, rep);
     if (ind_s >= 0) {
         u4 pos = 0;
-        char* result = { 0 };
+        string result = { 0 };
         while (*text != '\0') {
             if (pos == ind_s) {
                 break;
@@ -530,11 +556,11 @@ char* str_rep_s(char* text, char* rep, char* fin) {
 
 #endif // SIYOSU_NO_STRING_MAN
 
-// read an entire file as char*
-char* slurp_file(const char* filename) {
+// read an entire file as string
+string slurp_file(const string filename) {
     // load the file
     FILE* f = fopen(filename, "r");
-    char* buffer;
+    string buffer;
 
     if (f == NULL ) {
         panic("Unable to load file `%s`", filename);
@@ -543,9 +569,9 @@ char* slurp_file(const char* filename) {
     long buf_size;
     fseek(f, 0, SEEK_END);
     buf_size = ftell(f);
-    buffer = (char*)malloc(buf_size+1);
+    buffer = (string)malloc(buf_size+1);
     rewind(f);
-    int read = fread((char*)buffer, sizeof(char*), buf_size, f);
+    int read = fread((string)buffer, sizeof(string), buf_size, f);
     (void)read;
     // close the file
     fclose(f);
