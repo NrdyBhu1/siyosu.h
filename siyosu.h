@@ -399,13 +399,13 @@ int str_count(char* text, char st) {
 }
 
 char** str_split(char* str, char deliminator, int* len) {
-    char** res = { 0 };
+    char** res;
     int lent = 0;
     char* buffer = { 0 };
     while (*str != '\0') {
         if (*str == deliminator) {
             *buffer = '\0';
-            *res = buffer;
+            **res = *buffer;
             buffer = "";
             res++;
             lent++;
@@ -503,6 +503,29 @@ char* str_rep_s(char* text, char* rep, char* fin) {
 }
 
 #endif // SIYOSU_NO_STRING_MAN
+
+// read an entire file as char*
+char* slurp_file(const char* filename) {
+    // load the file
+    FILE* f = fopen(filename, "r");
+    char* buffer;
+
+    if (f == NULL ) {
+        LogError("Unable to load file `%s`", filename);
+    }
+    // initialize the buffer size
+    long buf_size;
+    fseek(f, 0, SEEK_END);
+    buf_size = ftell(f);
+    buffer = (const char*)malloc(buf_size+1);
+    rewind(f);
+    int read = fread((char*)buffer, sizeof(const char*), buf_size, f);
+    (void)read;
+    // close the file
+    fclose(f);
+    buffer[buf_size] = '\0';
+    return buffer;
+}
 
 #ifdef __cplusplus
 }
