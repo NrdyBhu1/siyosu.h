@@ -318,20 +318,6 @@ VECTOR_DEF(char);
 // VECTOR_DEF(vt);
 // #endif
 
-#define HASH_TABLE(kt, vt) \
-typedef struct { kt* keys, vt* values, size_t item_sl } ht_##kt##_##vt##; \
-SIYOSU_FUNC void ht_##kt##_##vt##_init(int nmemb, size_t size) {} \
-SIYOSU_FUNC vt ht_##kt##_##vt##_get(kt key_holder) {} \
-SIYOSU_FUNC void ht_##kt##_##vt##_push(kt key, vt value) {} \
-SIYOSU_FUNC void ht_##kt##_##vt##_pop(int index) {} \
-SIYOSU_FUNC void ht_##kt##_##vt##_pop(kt key) {} \
-SIYOSU_FUNC void ht_##kt##_##vt##_clear() {} \
-SIYOSU_FUNC void ht_##kt##_##vt##_free() {}
-
-#if !defined(SIYOSU_NO_DEFAULT_HT)
-HASH_TABLE(string, int);
-#endif
-
 #endif
 
 // String Functions
@@ -436,28 +422,61 @@ int str_count(string text, char st) {
     return count;
 }
 
-string* str_split(string str, char deliminator, int* len) {
-    string* res = { NULL };
-    string buffer = { 0 };
-    int count = 0;
-    res[0] = buffer;
-    if (!s__vn(str)) {
-        count = 1;
-        for(u4 i = 0; i < 1024; i++) {
+const string* str_split(string str, char deliminator, int* len) {
+
+    static const char *result[128] = { NULL };
+    static char buffer[1024] = { 0 };
+    // memset(buffer, 0, 1024);
+
+    result[0] = buffer;
+    int counter = 0;
+
+    if (!s__vn(str))
+    {
+        counter = 1;
+
+        // Count how many substrings we have on text and point to every one
+        for (int i = 0; i < 1024; i++)
+        {
             buffer[i] = str[i];
             if (buffer[i] == '\0') break;
-            else if(buffer[i] == deliminator) {
-                buffer[i] = '\0';
-                res[count] = buffer + i + 1;
-                count++;
-                if (count == 1024) break;
+            else if (buffer[i] == deliminator)
+            {
+                buffer[i] = '\0';   // Set an end of string at this point
+                result[counter] = buffer + i + 1;
+                counter++;
+
+                if (counter == 128) break;
             }
         }
     }
-    *len = count;
-    return res;
+
+    *len = counter;
+    return result;
 }
 
+// string* str_split(string str, char deliminator, int* len) {
+//     string* res = { NULL };
+//     string buffer = { 0 };
+//     int count = 0;
+//     res[0] = buffer;
+//     if (!s__vn(str)) {
+//         count = 1;
+//         for(u4 i = 0; i < 1024; i++) {
+//             buffer[i] = str[i];
+//             if (buffer[i] == '\0') break;
+//             else if(buffer[i] == deliminator) {
+//                 buffer[i] = '\0';
+//                 res[count] = buffer + i + 1;
+//                 count++;
+//                 if (count == 1024) break;
+//             }
+//         }
+//     }
+//     *len = count;
+//     return res;
+// }
+//
 bool str_substr(string text, string sub_str) {
     u4 ind = str_index_c(text, sub_str[0]);
     if (ind >= 0) {

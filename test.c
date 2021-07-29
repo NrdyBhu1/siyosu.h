@@ -7,9 +7,11 @@
 #include "siyosu.h"
 
 int main() {
-    FILE* f = popen("python3 main.py", "r+");
-    fwrite("pwssd", sizeof(char*), 5, f);
-    char* buffer = (char*)malloc(4);
-    fread(buffer, sizeof(char*), 4, f);
-    return pclose(f);
+    string hello = "Hello_World_test";
+    int len = 0;
+    const string* hello_split = str_split(hello, '_', &len);
+    for(int i = 0; i < len; i++) {
+      printf("%s\n", hello_split[i]);
+    }
+    return 0;
 }
