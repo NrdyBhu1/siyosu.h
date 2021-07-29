@@ -7,7 +7,9 @@
 #include "siyosu.h"
 
 int main() {
-    CommandOutput test = CMD("hello");
-    printf("%s %d\n", test.output, str_len(test.output));
-    return 0;
+    FILE* f = popen("python3 main.py", "r+");
+    fwrite("pwssd", sizeof(char*), 5, f);
+    char* buffer = (char*)malloc(4);
+    fread(buffer, sizeof(char*), 4, f);
+    return pclose(f);
 }
